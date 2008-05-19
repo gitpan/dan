@@ -6,7 +6,7 @@ use warnings;
 
 use Encode qw(find_encoding);
 
-our $VERSION = '0.551.1';
+our $VERSION = '0.551.2';
 
 our $SINGLETON = bless { code => {} }, __PACKAGE__;
 
@@ -21,9 +21,16 @@ my $LATIN1 = find_encoding('iso-8859-1')
 my $DEFAULT_ENCODING;
 my $DEFAULT_UTF8HINTBITS;
 my $utf8_hint_bits = 0x00800000;
+my $is_DanThe;
 
 sub import {
     my($class, %opts) = @_;
+
+    if (exists $opts{the} && !$is_DanThe) {
+        eval "package the; sub Dan { shift; return wantarray ? \@_ : \$_[0] } 1;";
+        $is_DanThe++;
+        return;
+    }
 
     if (ref($opts{cat_decode} || '') eq 'CODE' && ! exists $opts{decode}) {
         $opts{decode} = sub { shift };
@@ -127,6 +134,9 @@ dan - The literal unread
   no dan;
   print "foo"; # foo
 
+  use dan the => 'Blogger';
+  print Dan the 'Blogger';
+
 
 it is possible to solve it with force though there are utf8 pragma and no compatibility. 
 
@@ -171,6 +181,11 @@ or
   use utf8;
   use dan force => 1;
   print "foo"; # not displaying
+
+=item the
+
+  use dan the => 'Blogger';
+  print Dan the 'Blogger';
 
 =back
 
